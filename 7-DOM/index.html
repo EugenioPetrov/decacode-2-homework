@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Slider</title>
+  </head>
+  <body data-slides="1, 2, 3, 4, 5, 6, 7">
+  <style>
+    * {
+      box-sizing: border-box;
+      }
+      
+    html, body {
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      top: 0;
+      left: 0;
+      overflow: auto;
+      background: linear-gradient(45deg, rgb(238, 207, 186), rgb(212, 237, 248));
+      }
+
+    .sliderBlock {
+      padding: 5px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 25%;
+      height: 40%;
+      position: absolute;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      left: 0;
+      margin: auto;
+      background: radial-gradient(40% 50%, rgb(250, 236, 213), rgb(211, 245, 229));
+      background-size: cover;
+      border-radius: 10%;
+      }
+    
+    .leftBtn {
+      border-radius: 10px;
+      background: linear-gradient(to top left, rgb(107, 233, 250), rgb(39, 238, 99));
+      height: 50%;
+    }
+
+    .rightBtn {
+      border-radius: 10px;
+      background: linear-gradient(to top left, rgb(107, 233, 250), rgb(39, 238, 99));
+      height: 50%;
+    }
+
+    .autoBtn {
+      border-radius: 10px;
+      font-size: 18px;
+      background: linear-gradient(to top left, rgb(255, 171, 241), rgb(12, 231, 129));
+      position: absolute;
+      transform: translateX(-55%);
+      margin-bottom: 2px;
+    }
+
+    .paginator {
+      border-radius: 10px;
+      font-size: 28px;
+      background: linear-gradient(to top left, rgb(171, 255, 199), rgb(132, 245, 39));
+      position: absolute;
+      transform: translateX(-55%);
+      margin-top: 2px;
+    }
+    
+    .paginator-item.current {
+      border-radius: 10px;
+      background: linear-gradient(to top left, rgb(245, 111, 71), rgb(248, 245, 58));
+    }
+
+
+    .slide {
+    padding: 20px;
+    border-radius: 20px;
+    font-size: 28px;
+    background-size: cover;
+    background: linear-gradient(to top left, rgb(16, 126, 141), rgb(247, 172, 87)); 
+    opacity: 0;
+    transition: opacity 1s;
+    }
+
+    .slide.show {
+    opacity: 1;
+    transition: opacity 2s;
+    }
+
+  </style>
+
+  <script>
+  (() => {
+    const slides = document.body.dataset.slides.split(', ');
+    const $body = document.querySelector('body');
+
+    const $sliderBlock = document.createElement('div');
+    $sliderBlock.className = 'sliderBlock';
+    const $leftBtn = document.createElement('button');
+    const $rightBtn = document.createElement('button');
+    const $autoBtn = document.createElement('button');
+    $leftBtn.textContent = '<-';
+    $leftBtn.className = 'leftBtn';
+    $rightBtn.textContent = '->';
+    $rightBtn.className = 'rightBtn';
+    $autoBtn.textContent = 'Auto';
+    $autoBtn.className = 'autoBtn';
+
+    let $slide = document.createElement('div');
+    $slide.innerHTML = 'Press any button';
+    $slide.className = 'slide show';
+
+    function Animation() {
+      $slide.classList.remove('show');
+      setTimeout(() => $slide.classList.add('show'), 300);
+    }
+
+    function previousSlide() {
+      setTimeout(() => {
+        slides.findIndex((el) => el == $slide.innerText) < 1 ? $slide.innerText = slides[slides.length - 1] : $slide.innerText -= 1;
+        activeSlide();
+      }, 200);
+      Animation();
+    }
+
+    $leftBtn.onclick = () => {
+      previousSlide();
+    };
+
+    function nextSlide() {
+      setTimeout(() => {
+        slides.findIndex((el) => el == $slide.innerText) > (slides.length - 2) ? $slide.innerText = slides[0] : $slide.innerText = parseInt($slide.innerText) + 1;
+        slides.findIndex((el) => el == $slide.innerText) < 0 ? $slide.innerText = slides[0] : false;
+        activeSlide();
+      }, 200);
+      Animation();
+    }
+
+    $rightBtn.onclick = () => {
+      nextSlide();
+    };
+
+    function autoSlide() {
+      $autoBtn.innerText == 'Auto' ? $autoBtn.innerText = 'Stop' : $autoBtn.innerText = 'Auto';
+
+      var time = setInterval(function () {
+        nextSlide();
+        Animation();
+        activeSlide();
+        if ($autoBtn.innerText == 'Auto') {
+          clearInterval(time);
+        }
+      }, 4000);
+    }
+    
+    $autoBtn.onclick = () => {
+      autoSlide();
+    };
+
+    $sliderBlock.appendChild($leftBtn);
+    $sliderBlock.appendChild($slide);
+    $sliderBlock.appendChild($rightBtn);
+    $body.append($sliderBlock);
+
+    const sBlockRect = $sliderBlock.getBoundingClientRect();
+    $autoBtn.style.bottom = sBlockRect.top + 'px';
+    $autoBtn.style.left = sBlockRect.left + (sBlockRect.width / 2) + 'px';
+
+    $body.append($autoBtn);
+
+    function activeSlide() {
+      const $paginators = document.querySelectorAll('.paginator-item');
+      console.log($paginators);
+      $paginators.forEach((el) => { el.classList.remove('current'); el.innerText == $slide.innerText ? el.classList.add('current') : false });}
+
+    const $paginator = document.createElement('div');
+          $paginator.classList.add('paginator');
+          slides.forEach((el) => {
+            let $newEl = document.createElement('a');
+            $newEl.classList.add('paginator-item');
+            $newEl.innerText = el;
+            $newEl.addEventListener('click', (f) => {
+                    setTimeout(() => {
+                      $slide.innerText = f.target.innerText;
+                      activeSlide();
+                    }, 200)
+                    Animation();
+            });
+            $paginator.append($newEl);
+          });
+
+    $paginator.style.top = sBlockRect.bottom + 'px';
+    $paginator.style.left = sBlockRect.left + (sBlockRect.width / 2) + 'px';
+
+    $body.append($paginator);
+  })();
+
+    
+  </script>
+
+  </body>
